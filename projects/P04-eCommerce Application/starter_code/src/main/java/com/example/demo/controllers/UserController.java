@@ -39,6 +39,7 @@ public class UserController {
 	@GetMapping("/{username}")
 	public ResponseEntity<User> findByUserName(@PathVariable String username) {
 		User user = userRepository.findByUsername(username);
+		log.info("Username found " + username);
 		return user == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(user);
 	}
 	
@@ -46,18 +47,24 @@ public class UserController {
 	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
 		User user = new User();
 		user.setUsername(createUserRequest.getUsername());
-		log.info("UserName set with", createUserRequest.getUsername());
+		log.info("User name set with " + createUserRequest.getUsername());
 		Cart cart = new Cart();
 
 		cartRepository.save(cart);
 		user.setCart(cart);
-		if(createUserRequest.getPassword().length() < 7 || !createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
-			System.out.println("Error with user password. Cannot create user {}" + createUserRequest.getUsername());
+
+		if (createUserRequest.getPassword().length() < 8) {
+			log.info("Password not meeting requirement of 7 chars" + createUserRequest.getUsername());
 			return ResponseEntity.badRequest().build();
 		}
-		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
+		else if (!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
+			log.error("Cannot create user {}, password did not match ", createUserRequest.getUsername());
+			return ResponseEntity.badRequest().build();
+		}
 
+		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
 		userRepository.save(user);
+		log.info("Added user account for " + createUserRequest.getUsername());
 		return ResponseEntity.ok(user);
 	}
 	
