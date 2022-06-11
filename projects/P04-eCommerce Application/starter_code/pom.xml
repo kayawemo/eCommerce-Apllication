@@ -116,6 +116,10 @@
 				<version>${project.parent.version}</version>
 			</plugin>
 		</plugins>
+
+		<sourceDirectory>
+			${project.basedir}/src/main/java
+		</sourceDirectory>
 	</build>
 
 </project>
